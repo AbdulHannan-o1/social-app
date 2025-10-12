@@ -1,0 +1,28 @@
+{
+  "name": "social-app",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/AbdulHannan-o1/social-app#readme",
+  "bugs": {
+    "url": "https://github.com/AbdulHannan-o1/social-app/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AbdulHannan-o1/social-app.git"
+  },
+  "license": "ISC",
+  "author": "Abdul Hannan",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.1"
+  }
+}
