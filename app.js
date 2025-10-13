@@ -70,10 +70,43 @@ app.post('/login', async (req, res) =>{
     if(!user) return res.status(500).send("somthing went Wrong")
      
     bcrypt.compare(password, user.password,(err, result) => {
-        if(result) return res.status(200).send("you can Login")
+        if(result) {
+
+             let token = jwt.sign({ email: email, userid: user._id }, "shhhhh");
+             res.cookie("token", token);
+             res.redirect("/profile");
+        }
         else return res.status(201).send("invalid Credentials")
     })
 });
+
+app.get('/profile', isLoggedIn, async (req, res) => {
+    let user = await userModel.findOne({email: req.user.email}).populate("posts")
+    res.render("profile", {user})
+})
+
+app.post('/post', isLoggedIn, async (req, res) => {
+    let user = await userModel.findOne({email: req.user.email})
+    let {content} = req.body
+
+    let post = await postModel.create({
+        user: user._id,
+        content
+    })
+    user.posts.push(post._id)
+    await user.save()
+    res.redirect("/profile")
+})
+
+// checking for authenricated user 
+function isLoggedIn (req,res, next) {
+    if(req.cookies.token === "") res.redirect("/login");
+    else {
+        let data = jwt.verify(req.cookies.token, "shhhhh")
+        req.user = data;
+    }   
+    next()
+}
 
 app.get('/logout', (req, res) => {
     res.cookie('token', "")
