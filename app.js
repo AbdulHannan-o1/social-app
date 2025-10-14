@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken')
 const path = require('path');
 
 app.set('view engine', 'ejs');
+app.set('views', [path.join(__dirname, 'views'), path.join(__dirname, 'views/partials')]);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/static', express.static('public'));
@@ -20,6 +21,7 @@ app.get('/', (req, res) => {
 app.get('/login', (req, res) => {
     res.render('login');
 });
+
 
 app.post('/register', async (req, res) => {
     try {
@@ -82,7 +84,7 @@ app.post('/login', async (req, res) =>{
 
 app.get('/profile', isLoggedIn, async (req, res) => {
     let user = await userModel.findOne({email: req.user.email});
-    let allPosts = await postModel.find().populate("user"); // Fetch all posts and populate user details
+    let allPosts = await postModel.find().populate("user").populate("comments.author");
     res.render("profile", { user, allPosts });
 });
 
@@ -102,6 +104,43 @@ app.get('/edit/:id', isLoggedIn, async (req, res) => {
     let post = await postModel.findOne({_id: req.params.id});
     res.render("edit", {post},)
 });
+
+
+app.post('/post/:id/comment', isLoggedIn, async (req, res) => {
+  try {
+    const post = await postModel.findById(req.params.id)
+    if (!post) return res.status(404).send('Post not found')
+
+    post.comments.push({
+      text: req.body.commentText,
+      author: req.user._id
+    })
+
+    await post.save()
+    console.log(post.comments[post.comments.length - 1])
+
+    res.redirect('/profile')
+  } catch (err) {
+    console.error(err)
+    res.status(500).send('Something went wrong while adding the comment!')
+  }
+})
+app.get('/post/:id', isLoggedIn, async (req, res) => {
+  try {
+    const post = await postModel.findById(req.params.id)
+      .populate('author')
+      .populate('comments.author')
+
+    if (!post) return res.status(404).send('Post not found')
+
+    res.render('post', { post }) // make sure you have a post.ejs or similar
+  } catch (err) {
+    console.error(err)
+    res.status(500).send('Something went wrong while fetching the post!')
+  }
+})
+
+
 
 app.post('/update/:id', isLoggedIn, async (req, res)=> {
     let {content} = req.body

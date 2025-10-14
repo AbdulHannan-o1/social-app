@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const user = require('./user');
+const { text } = require('express');
 
  const postSchema = new mongoose.Schema({
     user: {
@@ -10,6 +11,13 @@ const user = require('./user');
     likes: [
         { type: mongoose.Schema.Types.ObjectId, ref: 'user' }
     ],
+    comments: [
+            {
+                text: String,
+                author: {type: mongoose.Schema.Types.ObjectId, ref: user}
+        }
+        
+    ]
 
 }, {timestamps: true})
 
