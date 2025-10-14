@@ -51,7 +51,7 @@ app.post('/register', async (req, res) => {
                 let token = jwt.sign({ email: email, userid: newUser._id }, "shhhhh");
 
                 res.cookie("token", token);
-                res.send("registered")
+                res.redirect('/profile')
             });
         });
 
@@ -81,8 +81,32 @@ app.post('/login', async (req, res) =>{
 });
 
 app.get('/profile', isLoggedIn, async (req, res) => {
-    let user = await userModel.findOne({email: req.user.email}).populate("posts")
-    res.render("profile", {user})
+    let user = await userModel.findOne({email: req.user.email});
+    let allPosts = await postModel.find().populate("user"); // Fetch all posts and populate user details
+    res.render("profile", { user, allPosts });
+});
+
+app.get('/like/:id', isLoggedIn, async (req, res) => {
+    let post = await postModel.findOne({_id: req.params.id}).populate("user")
+
+    if(post.likes.indexOf(req.user.userid) === -1) {
+        post.likes.push(req.user.userid)
+    } else {
+        post.likes.splice(post.likes.indexOf(req.user.userid), 1)
+    }
+    await post.save()
+    res.redirect('/profile')
+});
+
+app.get('/edit/:id', isLoggedIn, async (req, res) => {
+    let post = await postModel.findOne({_id: req.params.id});
+    res.render("edit", {post},)
+});
+
+app.post('/update/:id', isLoggedIn, async (req, res)=> {
+    let {content} = req.body
+    let post = await postModel.findOneAndUpdate({_id: req.params.id}, {content})
+    res.redirect('/profile')
 })
 
 app.post('/post', isLoggedIn, async (req, res) => {
