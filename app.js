@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const connectDB = require('./config/db');
+const upload = require('./config/multerConfig')
 
 connectDB();
 
@@ -10,17 +11,53 @@ const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
 const path = require('path');
+const crypto = require('crypto')
 
 app.set('view engine', 'ejs');
 app.set('views', [path.join(__dirname, 'views'), path.join(__dirname, 'views/partials')]);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/static', express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
+
+
 
 app.get('/', (req, res) => {
     res.render('index');
 });
+
+app.get('/profileUpload', (req, res) => {
+    res.render("profileUpload")
+})
+
+app.post('/profileUpload', isLoggedIn,  upload.single("image"), async (req, res) => {
+    try {
+    let user = await userModel.findOne({email: req.user.email})
+    user.profilePic.data = req.file.buffer
+    user.profilePic.contentType = req.file.mimetype
+    await user.save()
+    console.log("Saved image size:", req.file.buffer.length);
+    res.redirect('/profile')
+    } catch (err) {
+        res.status(500).json({message: "Error uploading image"})
+    }
+})
+app.get('/user/:id/profile-pic', async (req, res) => {
+  try {
+    const user = await userModel.findById(req.params.id);
+
+    if (!user || !user.profilePic || !user.profilePic.data) {
+      console.log('⚠️ No profile pic found for user:', req.params.id);
+      return res.status(404).send('No profile picture found');
+    }
+
+    res.set('Content-Type', user.profilePic.contentType);
+    res.end(user.profilePic.data);
+  } catch (err) {
+    console.error('❌ Error serving image:', err);
+    res.status(500).send('Server error while fetching image');
+  }
+})
 
 app.get('/login', (req, res) => {
     res.render('login');
@@ -158,7 +195,8 @@ app.post('/post', isLoggedIn, async (req, res) => {
 
     let post = await postModel.create({
         user: user._id,
-        content
+        content,
+        
     })
     user.posts.push(post._id)
     await user.save()

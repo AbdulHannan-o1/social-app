@@ -2,7 +2,15 @@
 
     <div class="container mx-auto p-6">
         <div class="bg-transparent p-8 rounded-xl shadow-2xl mb-12 border border-zinc-700">
-            <h2 class="text-4xl font-extrabold text-white mb-6">Hello, <%= user.username %>!</h2>
+            <div class="flex items-start gap-4">
+                <div class="w-15 h-15 rounded-md">
+                    <img class="w-full h-full object-cover" onclick="window.location.href = '/profileUpload'"
+                        src="<%= user.profilePic ? '/user/' + user._id + '/profile-pic' : '/images/default-avatar.png' %>"
+                        alt="Profile picture">
+                </div>
+                <h2 class="text-4xl font-extrabold text-white mb-6">Hello, <%= user.username %>!</h2>
+            </div>
+
             <p class="text-zinc-300 text-lg mb-8">Share your thoughts with the world or see what others are up to.</p>
 
             <h4 class="text-2xl font-semibold mb-6 text-white">Create a New Post</h4>
@@ -63,14 +71,17 @@
                                 <% post.comments.forEach(comment=> { %>
                                     <li>
                                         <strong>
-                                        <%= comment.author ? comment.author.username || comment.author.email : "Unknown" %>:                                    </strong>
+                                            <%= comment.author ? comment.author.username || comment.author.email
+                                                : "Unknown" %>:
+                                        </strong>
                                         <%= comment.text %>
                                     </li>
                                     <% }) %>
                             </ul>
 
                             <form action="/post/<%= post._id %>/comment" method="POST">
-                                <textarea name="commentText" class="resize-none" placeholder="Write a comment..." required></textarea>
+                                <textarea name="commentText" class="resize-none" placeholder="Write a comment..."
+                                    required></textarea>
                                 <button type="submit">Add Comment</button>
                             </form>
 

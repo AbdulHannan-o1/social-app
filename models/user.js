@@ -14,7 +14,11 @@ const userSchema = new mongoose.Schema({
     age : Number,
     email: String,
     password: String,
-    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'post' }]
+    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'post' }],
+    profilePic: {
+        data: Buffer,
+        contentType: String,
+    }
 })
 
 module.exports = mongoose.model('user', userSchema);

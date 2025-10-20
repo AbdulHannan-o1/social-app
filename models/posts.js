@@ -14,7 +14,7 @@ const { text } = require('express');
     comments: [
             {
                 text: String,
-                author: {type: mongoose.Schema.Types.ObjectId, ref: user}
+                author: {type: mongoose.Schema.Types.ObjectId, ref: 'user'}
         }
         
     ]
